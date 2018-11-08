@@ -14,23 +14,21 @@
 #
 __author__='''
 
-######################################################
-                By S.S.B Group                          
-######################################################
-
-    Suraj Singh
-    Admin
-    S.S.B Group
-    surajsinghbisht054@gmail.com
-    http://bitforestinfo.blogspot.in/
-
-    Note: We Feel Proud To Be Indian
-######################################################
 '''
 import socket,struct,binascii,os
 import pye
+import threading
+import pandas as pd
+import datetime
 
 print pye.__author__
+
+def printit():
+    threading.Timer(7200.0, printit).start()
+    global record
+    record.to_csv(str(datetime.datetime.now())+ ".csv")
+    record = pd.DataFrame(columns = col_names)
+
 
 if os.name == "nt":
     s = socket.socket(socket.AF_INET,socket.SOCK_RAW,socket.IPPROTO_IP)
@@ -40,9 +38,30 @@ if os.name == "nt":
 else:
     s=socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0800))
 
+#Dataframe
+col_names = ["source_IP", "destination_IP", "source_MAC", "destination_MAC", "source_Port"]
+record = pd.DataFrame(columns = col_names)
+
+
+printit()
+
+
 while True:
     pkt=s.recvfrom(65565)
     unpack=pye.unpack()
+    #Cleaning
+    ip_header = unpack.ip_header(pkt[0][14:34])
+    source_ip = ip_header['Destination Address']
+    destination_ip = ip_header['Source Address']
+    eth_header = unpack.eth_header(pkt[0][0:14])
+    source_mac = eth_header['Source Mac']
+    destination_mac = eth_header['Destination Mac']
+    tcp_header = unpack.tcp_header(pkt[0][34:54])
+    source_Port = tcp_header['Source Port']
+
+    if source_ip == destination_ip:
+        continue
+    
     print "\n\n===>> [+] ------------ Ethernet Header----- [+]"
     for i in unpack.eth_header(pkt[0][0:14]).iteritems():
         a,b=i
@@ -55,5 +74,5 @@ while True:
     for  i in unpack.tcp_header(pkt[0][34:54]).iteritems():
         a,b=i
         print "{} : {} | ".format(a,b),
-
+    record.loc[len(record)] = [source_ip,destination_ip,source_mac,destination_mac,source_Port]
     
