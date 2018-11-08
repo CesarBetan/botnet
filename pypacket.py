@@ -1,32 +1,15 @@
-#!/usr/bin/python
 
-# ---------------- READ ME ---------------------------------------------
-# This Script is Created Only For Practise And Educational Purpose Only
-# This Script Is Created For http://bitforestinfo.blogspot.com
-# This Script is Written By
-#
-#
-##################################################
-######## Please Don't Remove Author Name #########
-############### Thanks ###########################
-##################################################
-#
-#
-__author__='''
-
-'''
 import socket,struct,binascii,os
 import pye
 import threading
 import pandas as pd
 import datetime
 
-print pye.__author__
-
 def printit():
-    threading.Timer(7200.0, printit).start()
+    threading.Timer(120.0, printit).start()
     global record
     record.to_csv(str(datetime.datetime.now())+ ".csv")
+    detectBadIp(record)
     record = pd.DataFrame(columns = col_names)
 
 
@@ -39,14 +22,23 @@ else:
     s=socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0800))
 
 #Dataframe
-col_names = ["source_IP", "destination_IP", "source_MAC", "destination_MAC", "source_Port"]
+col_names = ["source_IP", "destination_IP", "source_MAC", "destination_MAC", "source_Port", "destination_Port"]
 record = pd.DataFrame(columns = col_names)
 
-
+#Start thread Time
 printit()
 
+#IP data
 
-while True:
+print(ips)
+
+
+
+
+
+
+
+"""while True:
     pkt=s.recvfrom(65565)
     unpack=pye.unpack()
     #Cleaning
@@ -58,6 +50,7 @@ while True:
     destination_mac = eth_header['Destination Mac']
     tcp_header = unpack.tcp_header(pkt[0][34:54])
     source_Port = tcp_header['Source Port']
+    destination_Port = tcp_header['Destination Port']
 
     if source_ip == destination_ip:
         continue
@@ -74,5 +67,12 @@ while True:
     for  i in unpack.tcp_header(pkt[0][34:54]).iteritems():
         a,b=i
         print "{} : {} | ".format(a,b),
-    record.loc[len(record)] = [source_ip,destination_ip,source_mac,destination_mac,source_Port]
-    
+    record.loc[len(record)] = [source_ip,destination_ip,source_mac,destination_mac,source_Port, destination_Port]
+    """
+
+def detectBadIp(rec):
+    ips = pd.read_csv('ip_database.csv')
+    for index, values  in ips.iterrows():
+        for index2, values2 in rec.iterrows():
+            if values2['ip'] == values['destination_IP']:
+                
