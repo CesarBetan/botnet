@@ -8,10 +8,10 @@ import analizer
 
 
 def printit():
-    threading.Timer(60.0, printit).start()
+    threading.Timer(30.0, printit).start()
     global record
-    record.to_csv(str(datetime.datetime.now())+ ".csv")
     analize_record = record
+    analize_record.to_csv(str(datetime.datetime.now())+ ".csv")
     record = pd.DataFrame(columns = col_names)
     analizer.detectBadIp(analize_record)
     
