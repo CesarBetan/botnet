@@ -21,7 +21,12 @@ def detectBadPorts(rec):
             counted_dataframe[values['destination_IP']] += 1;
         else:
             counted_dataframe[values['destination_IP']] = 1;
-    print(counted_dataframe)
+    
+    for key, values in counted_dataframe.items():
+        #Change value to number of desire repeats for botnet
+        if values > 1 :
+            print(str(key) + " Es botnet")
+    #print(counted_dataframe)
 
 
 
