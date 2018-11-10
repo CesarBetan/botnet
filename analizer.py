@@ -1,4 +1,6 @@
 import pandas as pd
+import requests
+import json
 
 def detectBadIp(rec):
     ips = pd.read_csv('ip_database.csv')
@@ -19,11 +21,11 @@ def detectBadPorts(rec):
     indices=[]
     for index, values in dataframe.iterrows():
         if values['destination_IP'] in counted_dataframe:
-            counted_dataframe[values['destination_IP']] += 1;
+            counted_dataframe[values['destination_IP']] += 1
             if counted_dataframe[values['destination_IP']]>1:
                 indices.append(index)
         else:
-            counted_dataframe[values['destination_IP']] = 1;
+            counted_dataframe[values['destination_IP']] = 1
             
     
     for key, values in counted_dataframe.items():
@@ -37,7 +39,6 @@ def detectBadPorts(rec):
 
 
 def detectErrors(rec):
-    print('verga')
     coincide = rec['destination_MAC'].isin(['000000000000'])
     nuevoDF = coincide.to_frame()
     nuevoDF['index1']= nuevoDF.index
@@ -47,11 +48,11 @@ def detectErrors(rec):
     indices=[]
     for index, values in dataframe.iterrows():
         if values['destination_MAC'] in counted_dataframe:
-            counted_dataframe[values['destination_MAC']] += 1;
+            counted_dataframe[values['destination_MAC']] += 1
             if counted_dataframe[values['destination_MAC']]>1:
                 indices.append(index)
         else:
-            counted_dataframe[values['destination_MAC']] = 1;
+            counted_dataframe[values['destination_MAC']] = 1
             
     for key, values in counted_dataframe.items():
         #Change value to number of desire repeats for botnet
@@ -64,3 +65,20 @@ def detectErrors(rec):
 data = [['197.1.2.3','000000000000'], ['192.10.2.10','pacu189fab68'], ['192.37.1.20','asdfgh765432'], ['192.123.45.1','000000000000'], ['192.234.53.1','plmoknijb875'], ['192.34.5.7','000000000000'],['192.123.45.1','1ef9hb76gko9']]
 test = pd.DataFrame(data,columns=['destination_IP','destination_MAC'])
 detectErrors(test)
+
+
+
+def getIpInfo(ip):
+    ip_requests = 'http://ip-api.com/json/' + str(ip) 
+    response = ''
+    try:
+        r = requests.get(ip_requests)
+        print(ip_requests)
+        if r.status_code == 200:
+            response = r.json()
+    except requests.exceptions as e:
+        print(e)
+    print(response["city"] + " " + response["country"] + " " + response["regionName"] +
+     " " + response["org"])
+    
+getIpInfo('185.34.23.43')
