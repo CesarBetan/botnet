@@ -4,13 +4,17 @@ import pye
 import threading
 import pandas as pd
 import datetime
+import analizer
+
 
 def printit():
-    threading.Timer(120.0, printit).start()
+    threading.Timer(60.0, printit).start()
     global record
     record.to_csv(str(datetime.datetime.now())+ ".csv")
-    detectBadIp(record)
+    analize_record = record
     record = pd.DataFrame(columns = col_names)
+    analizer.detectBadIp(analize_record)
+    
 
 
 if os.name == "nt":
@@ -30,7 +34,6 @@ printit()
 
 #IP data
 
-print(ips)
 
 
 
@@ -38,7 +41,7 @@ print(ips)
 
 
 
-"""while True:
+while True:
     pkt=s.recvfrom(65565)
     unpack=pye.unpack()
     #Cleaning
@@ -55,24 +58,19 @@ print(ips)
     if source_ip == destination_ip:
         continue
     
-    print "\n\n===>> [+] ------------ Ethernet Header----- [+]"
+    #print "\n\n===>> [+] ------------ Ethernet Header----- [+]"
     for i in unpack.eth_header(pkt[0][0:14]).iteritems():
         a,b=i
-        print "{} : {} | ".format(a,b),
-    print "\n===>> [+] ------------ IP Header ------------[+]"
+        #print "{} : {} | ".format(a,b),
+    #print "\n===>> [+] ------------ IP Header ------------[+]"
     for i in unpack.ip_header(pkt[0][14:34]).iteritems():
         a,b=i
-        print "{} : {} | ".format(a,b),
-    print "\n===>> [+] ------------ Tcp Header ----------- [+]"
+        #print "{} : {} | ".format(a,b),
+   # print "\n===>> [+] ------------ Tcp Header ----------- [+]"
     for  i in unpack.tcp_header(pkt[0][34:54]).iteritems():
         a,b=i
-        print "{} : {} | ".format(a,b),
+        #print "{} : {} | ".format(a,b),
     record.loc[len(record)] = [source_ip,destination_ip,source_mac,destination_mac,source_Port, destination_Port]
-    """
+    
 
-def detectBadIp(rec):
-    ips = pd.read_csv('ip_database.csv')
-    for index, values  in ips.iterrows():
-        for index2, values2 in rec.iterrows():
-            if values2['ip'] == values['destination_IP']:
-                
+
