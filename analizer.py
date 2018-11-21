@@ -8,8 +8,8 @@ def detectBadIp(rec):
     nuevoDF = coincide.to_frame()
     nuevoDF['index1'] = nuevoDF.index
     nuevoDF = nuevoDF[nuevoDF['ip'] == True]
-    print(ips.ix[nuevoDF['index1']])
-    print("Acaba")
+    nuevoDF = ips.ix[nuevoDF['index1']]['ip']
+    return rec.loc[rec['destination_IP'].isin(nuevoDF)]['destination_IP'].value_counts()
 
 def detectBadPorts(rec):
     coincide = rec['destination_Port'].isin(["6667", "25", "1080"])
@@ -27,13 +27,11 @@ def detectBadPorts(rec):
         else:
             counted_dataframe[values['destination_IP']] = 1
             
-    
+    posBots = []
     for key, values in counted_dataframe.items():
-        #Change value to number of desire repeats for botnet
         if values > 1 :
-            print(str(key) + " Es botnet")
-    print(rec.ix[indices])
-    #print(counted_dataframe)
+            posBots.append(str(key))
+    return rec.loc[rec['destination_IP'].isin(posBots)]['destination_IP'].value_counts()
 
 
 
@@ -53,19 +51,12 @@ def detectErrors(rec):
                 indices.append(index)
         else:
             counted_dataframe[values['destination_MAC']] = 1
-            
+    posBots = []        
     for key, values in counted_dataframe.items():
         #Change value to number of desire repeats for botnet
         if values > 1 :
-            print(str(key) + " Es botnet")
-    print(rec.ix[indices])
-
-
-
-data = [['197.1.2.3','000000000000'], ['192.10.2.10','pacu189fab68'], ['192.37.1.20','asdfgh765432'], ['192.123.45.1','000000000000'], ['192.234.53.1','plmoknijb875'], ['192.34.5.7','000000000000'],['192.123.45.1','1ef9hb76gko9']]
-test = pd.DataFrame(data,columns=['destination_IP','destination_MAC'])
-detectErrors(test)
-
+            posBots.append(str(key))
+    return rec.loc[rec['destination_IP'].isin(posBots)]['destination_IP'].value_counts()
 
 
 def getIpInfo(ip):
@@ -81,4 +72,36 @@ def getIpInfo(ip):
     print(response["city"] + " " + response["country"] + " " + response["regionName"] +
      " " + response["org"])
     
-getIpInfo('185.34.23.43')
+
+def anlyzeLog(df):
+    bad_ip = detectBadIp(df)
+    bad_port = detectBadPorts(df)
+    err = detectErrors(df)
+
+    posBots = {}
+
+    for ip, count in bad_ip.iteritems():
+        if ip in posBots:
+            posBots[ip]['reasons'].append({'reason':'BAD_IP', 'count':count})
+        else:
+            posBots[ip] = {
+                'ip': ip,
+                'reasons': [{'reason':'BAD_IP', 'count':count}]
+            }
+    for ip, count in bad_port.iteritems():
+        if ip in posBots:
+            posBots[ip]['reasons'].append({'reason':'BAD_PORT', 'count':count})
+        else:
+            posBots[ip] = {
+                'ip': ip,
+                'reasons': [{'reason':'BAD_PORT', 'count':count}]
+            }
+    for ip, count in err.iteritems():
+        if ip in posBots:
+            posBots[ip]['reasons'].append({'reason':'ERR', 'count':count})
+        else:
+            posBots[ip] = {
+                'ip': ip,
+                'reasons': [{'reason':'ERR', 'count':count}]
+            }
+    return posBots
