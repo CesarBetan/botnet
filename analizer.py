@@ -1,6 +1,14 @@
 import pandas as pd
 import requests
 import json
+import pyrebase
+
+config = {
+  "apiKey": "AIzaSyAf6e9SxUylF-Gbeb6Fu1OqbE9_Z3NnGOM",
+  "authDomain": "pyrebase-6e324.firebaseapp.com",
+  "databaseURL": "https://pyrebase-6e324.firebaseio.com/",
+  "storageBucket": "gs://pyrebase-6e324.appspot.com",
+}
 
 def detectBadIp(rec):
     ips = pd.read_csv('ip_database.csv')
@@ -68,6 +76,11 @@ def getIpInfo(ip):
     return response
     
 def anlyzeLog(df):
+    firebase = pyrebase.initialize_app(config)
+    auth = firebase.auth()
+    user = auth.sign_in_with_email_and_password("example@pe.com", "password")
+    db = firebase.database()
+    
     bad_ip = detectBadIp(df)
     bad_port = detectBadPorts(df)
     err = detectErrors(df)
@@ -76,27 +89,27 @@ def anlyzeLog(df):
 
     for ip, count in bad_ip.iteritems():
         if ip in posBots:
-            posBots[ip]['reasons'].append({'reason':'BAD_IP', 'count':count})
+            posBots[ip]['reasons'].append({'reason':'BAD_IP', 'count':int(count)})
         else:
             posBots[ip] = {
                 'ip': ip,
-                'reasons': [{'reason':'BAD_IP', 'count':count}]
+                'reasons': [{'reason':'BAD_IP', 'count':int(count)}]
             }
     for ip, count in bad_port.iteritems():
         if ip in posBots:
-            posBots[ip]['reasons'].append({'reason':'BAD_PORT', 'count':count})
+            posBots[ip]['reasons'].append({'reason':'BAD_PORT', 'count':int(count)})
         else:
             posBots[ip] = {
                 'ip': ip,
-                'reasons': [{'reason':'BAD_PORT', 'count':count}]
+                'reasons': [{'reason':'BAD_PORT', 'count':int(count)}]
             }
     for ip, count in err.iteritems():
         if ip in posBots:
-            posBots[ip]['reasons'].append({'reason':'ERR', 'count':count})
+            posBots[ip]['reasons'].append({'reason':'ERR', 'count':int(count)})
         else:
             posBots[ip] = {
                 'ip': ip,
-                'reasons': [{'reason':'ERR', 'count':count}]
+                'reasons': [{'reason':'ERR', 'count':int(count)}]
             }
     for ip in posBots:
         ip_info = getIpInfo(ip)
@@ -109,4 +122,5 @@ def anlyzeLog(df):
             'regionName':ip_info['regionName']
             }
         #Push to firebase
+        db.child("test_data").push(posBots[ip], user['idToken'])
     return posBots
