@@ -13,18 +13,17 @@ def printit():
     analize_record = record
     analize_record.to_csv(str(datetime.datetime.now())+ ".csv")
     record = pd.DataFrame(columns = col_names)
-    analizer.detectBadIp(analize_record)
+    analizer.anlyzeLog(analize_record)
     
 
 
 if os.name == "nt":
-    s = socket.socket(socket.AF_INET,socket.SOCK_RAW,socket.IPPROTO_IP)
-    s.bind(("YOUR_INTERFACE_IP",0))
-    s.setsockopt(socket.IPPROTO_IP,socket.IP_HDRINCL,1)
-    s.ioctl(socket.SIO_RCVALL,socket.RCVALL_ON)
+        s = socket.socket(socket.AF_INET,socket.SOCK_RAW,socket.IPPROTO_IP)
+        s.bind(("YOUR_INTERFACE_IP",0))
+        s.setsockopt(socket.IPPROTO_IP,socket.IP_HDRINCL,1)
+        s.ioctl(socket.SIO_RCVALL,socket.RCVALL_ON)
 else:
     s=socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0800))
-
 #Dataframe
 col_names = ["source_IP", "destination_IP", "source_MAC", "destination_MAC", "source_Port", "destination_Port"]
 record = pd.DataFrame(columns = col_names)
@@ -33,14 +32,6 @@ record = pd.DataFrame(columns = col_names)
 printit()
 
 #IP data
-
-
-
-
-
-
-
-
 while True:
     pkt=s.recvfrom(65565)
     unpack=pye.unpack()
@@ -57,19 +48,7 @@ while True:
 
     if source_ip == destination_ip:
         continue
-    
-    #print "\n\n===>> [+] ------------ Ethernet Header----- [+]"
-    for i in unpack.eth_header(pkt[0][0:14]).iteritems():
-        a,b=i
-        #print "{} : {} | ".format(a,b),
-    #print "\n===>> [+] ------------ IP Header ------------[+]"
-    for i in unpack.ip_header(pkt[0][14:34]).iteritems():
-        a,b=i
-        #print "{} : {} | ".format(a,b),
-   # print "\n===>> [+] ------------ Tcp Header ----------- [+]"
-    for  i in unpack.tcp_header(pkt[0][34:54]).iteritems():
-        a,b=i
-        #print "{} : {} | ".format(a,b),
+
     record.loc[len(record)] = [source_ip,destination_ip,source_mac,destination_mac,source_Port, destination_Port]
     
 
