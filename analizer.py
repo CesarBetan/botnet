@@ -33,9 +33,6 @@ def detectBadPorts(rec):
             posBots.append(str(key))
     return rec.loc[rec['destination_IP'].isin(posBots)]['destination_IP'].value_counts()
 
-
-
-
 def detectErrors(rec):
     coincide = rec['destination_MAC'].isin(['000000000000'])
     nuevoDF = coincide.to_frame()
@@ -58,21 +55,18 @@ def detectErrors(rec):
             posBots.append(str(key))
     return rec.loc[rec['destination_IP'].isin(posBots)]['destination_IP'].value_counts()
 
-
 def getIpInfo(ip):
     ip_requests = 'http://ip-api.com/json/' + str(ip) 
     response = ''
     try:
         r = requests.get(ip_requests)
-        print(ip_requests)
         if r.status_code == 200:
             response = r.json()
     except requests.exceptions as e:
+        return None
         print(e)
-    print(response["city"] + " " + response["country"] + " " + response["regionName"] +
-     " " + response["org"])
+    return response
     
-
 def anlyzeLog(df):
     bad_ip = detectBadIp(df)
     bad_port = detectBadPorts(df)
@@ -104,4 +98,15 @@ def anlyzeLog(df):
                 'ip': ip,
                 'reasons': [{'reason':'ERR', 'count':count}]
             }
+    for ip in posBots:
+        ip_info = getIpInfo(ip)
+        if ip_info is None:
+            posBots[ip]['infoIp'] = "NO_INFO"
+        else:
+            posBots[ip]['infoIp'] = {'organization': ip_info['org'], 
+            'country':ip_info['country'],
+            'city':ip_info['city'],
+            'regionName':ip_info['regionName']
+            }
+        #Push to firebase
     return posBots
