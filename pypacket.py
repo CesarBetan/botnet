@@ -14,9 +14,9 @@ config = {
   "storageBucket": "gs://pyrebase-6e324.appspot.com",
 }
 firebase = pyrebase.initialize_app(config)
-    auth = firebase.auth()
-    user = auth.sign_in_with_email_and_password("example@pe.com", "password")
-    db = firebase.database()
+auth = firebase.auth()
+user = auth.sign_in_with_email_and_password("example@pe.com", "password")
+db = firebase.database()
 
 def printit():
     threading.Timer(30.0, printit).start()
@@ -33,11 +33,6 @@ if os.name == "nt":
         s.bind(("YOUR_INTERFACE_IP",0))
         s.setsockopt(socket.IPPROTO_IP,socket.IP_HDRINCL,1)
         s.ioctl(socket.SIO_RCVALL,socket.RCVALL_ON)
-elif os.name == 'posix':
-    HOST = socket.gethostbyname(socket.gethostname())
-    # create a raw socket and bind it to the public interface
-    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.ntohs(0x0003))
-    s.bind((HOST, 0))
 else:
     s=socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 #Dataframe
