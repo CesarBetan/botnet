@@ -51,16 +51,16 @@ def detectErrors(rec):
     counted_dataframe={}
     indices=[]
     for index, values in dataframe.iterrows():
-        if values['destination_MAC'] in counted_dataframe:
-            counted_dataframe[values['destination_MAC']] += 1
-            if counted_dataframe[values['destination_MAC']]>1:
+        if values['destination_IP'] in counted_dataframe:
+            counted_dataframe[values['destination_IP']] += 1
+            if counted_dataframe[values['destination_IP']]>1:
                 indices.append(index)
         else:
-            counted_dataframe[values['destination_MAC']] = 1
+            counted_dataframe[values['destination_IP']] = 1
     posBots = []        
     for key, values in counted_dataframe.items():
         #Change value to number of desire repeats for botnet
-        if values > 1 :
+        if values >= 1 :
             posBots.append(str(key))
     return rec.loc[rec['destination_IP'].isin(posBots)]['destination_IP'].value_counts()
 
@@ -74,13 +74,15 @@ def getIpInfo(ip):
     except requests.exceptions as e:
         return None
         print(e)
+    if response['status'] == 'fail':
+        return None
     return response
     
 def anlyzeLog(df, db, user):
     bad_ip = detectBadIp(df)
     bad_port = detectBadPorts(df)
     err = detectErrors(df)
-
+    print(err)
     posBots = {}
 
     for ip, count in bad_ip.iteritems():
@@ -122,5 +124,5 @@ def anlyzeLog(df, db, user):
             'timestamp': str(datetime.datetime.now())
             }
         #Push to firebase
-        db.child("test_data").push(posBots[ip], user['idToken'])
+        #db.child("test_data").push(posBots[ip], user['idToken'])
     return posBots
