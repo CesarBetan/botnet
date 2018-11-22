@@ -21,7 +21,7 @@ def detectBadIp(rec):
     return rec.loc[rec['destination_IP'].isin(nuevoDF)]['destination_IP'].value_counts()
 
 def detectBadPorts(rec):
-    coincide = rec['destination_Port'].isin(["6667", "25", "1080", "21801","21802","21803", "21804", "21805", "21805"])
+    coincide = rec['destination_Port'].isin(["6667", "25", "1080", "21801","21802","21803", "21804", "21805", "21805", "139", "12474", "123", "137", "138", "1034", "1035", "7871", "8705", "19013", "40519" ,"445", "135","903","1025","1433","2745","3127","3306","3410","5000","6129"])
     nuevoDF = coincide.to_frame()
     nuevoDF['index1'] = nuevoDF.index
     nuevoDF = nuevoDF[nuevoDF['destination_Port'] == True]
