@@ -75,12 +75,7 @@ def getIpInfo(ip):
         print(e)
     return response
     
-def anlyzeLog(df):
-    firebase = pyrebase.initialize_app(config)
-    auth = firebase.auth()
-    user = auth.sign_in_with_email_and_password("example@pe.com", "password")
-    db = firebase.database()
-    
+def anlyzeLog(df, db):
     bad_ip = detectBadIp(df)
     bad_port = detectBadPorts(df)
     err = detectErrors(df)

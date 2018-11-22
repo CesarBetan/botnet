@@ -5,7 +5,18 @@ import threading
 import pandas as pd
 import datetime
 import analizer
+import pyrebase
 
+config = {
+  "apiKey": "AIzaSyAf6e9SxUylF-Gbeb6Fu1OqbE9_Z3NnGOM",
+  "authDomain": "pyrebase-6e324.firebaseapp.com",
+  "databaseURL": "https://pyrebase-6e324.firebaseio.com/",
+  "storageBucket": "gs://pyrebase-6e324.appspot.com",
+}
+firebase = pyrebase.initialize_app(config)
+    auth = firebase.auth()
+    user = auth.sign_in_with_email_and_password("example@pe.com", "password")
+    db = firebase.database()
 
 def printit():
     threading.Timer(30.0, printit).start()
@@ -13,17 +24,22 @@ def printit():
     analize_record = record
     analize_record.to_csv(str(datetime.datetime.now())+ ".csv")
     record = pd.DataFrame(columns = col_names)
-    analizer.anlyzeLog(analize_record)
+    analizer.anlyzeLog(analize_record, db)
     
 
 
 if os.name == "nt":
-        s = socket.socket(socket.AF_INET,socket.SOCK_RAW,socket.IPPROTO_IP)
+        s = socket.socket(socket.AF_INET,socket.SOCK_RAW,socket.ntohs(0x0003))
         s.bind(("YOUR_INTERFACE_IP",0))
         s.setsockopt(socket.IPPROTO_IP,socket.IP_HDRINCL,1)
         s.ioctl(socket.SIO_RCVALL,socket.RCVALL_ON)
+elif os.name == 'posix':
+    HOST = socket.gethostbyname(socket.gethostname())
+    # create a raw socket and bind it to the public interface
+    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.ntohs(0x0003))
+    s.bind((HOST, 0))
 else:
-    s=socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0800))
+    s=socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 #Dataframe
 col_names = ["source_IP", "destination_IP", "source_MAC", "destination_MAC", "source_Port", "destination_Port"]
 record = pd.DataFrame(columns = col_names)
@@ -48,7 +64,7 @@ while True:
 
     if source_ip == destination_ip:
         continue
-
+    db.child('log').push({'src_ip':source_ip,'dest_ip':destination_ip,'src_mac':source_mac, 'dest_mac':destination_mac,'src_port':source_Port, 'dest_port':destination_Port})
     record.loc[len(record)] = [source_ip,destination_ip,source_mac,destination_mac,source_Port, destination_Port]
     
 
