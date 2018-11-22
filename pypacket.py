@@ -24,7 +24,7 @@ def printit():
     analize_record = record
     analize_record.to_csv(str(datetime.datetime.now())+ ".csv")
     record = pd.DataFrame(columns = col_names)
-    analizer.anlyzeLog(analize_record, db)
+    analizer.anlyzeLog(analize_record, db, user)
     
 
 

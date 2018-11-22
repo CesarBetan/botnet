@@ -76,7 +76,7 @@ def getIpInfo(ip):
         print(e)
     return response
     
-def anlyzeLog(df, db):
+def anlyzeLog(df, db, user):
     bad_ip = detectBadIp(df)
     bad_port = detectBadPorts(df)
     err = detectErrors(df)
