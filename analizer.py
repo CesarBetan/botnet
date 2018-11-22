@@ -64,6 +64,10 @@ def detectErrors(rec):
             posBots.append(str(key))
     return rec.loc[rec['destination_IP'].isin(posBots)]['destination_IP'].value_counts()
 
+def detectMultipleCon(rec):
+    count =rec['destination_IP'].value_counts()
+    return count[count>100]
+
 def getIpInfo(ip):
     ip_requests = 'http://ip-api.com/json/' + str(ip) 
     response = ''
@@ -82,7 +86,7 @@ def anlyzeLog(df, db, user):
     bad_ip = detectBadIp(df)
     bad_port = detectBadPorts(df)
     err = detectErrors(df)
-    print(err)
+    mul_con = detectMultipleCon(df)
     posBots = {}
 
     for ip, count in bad_ip.iteritems():
@@ -109,6 +113,14 @@ def anlyzeLog(df, db, user):
                 'ip': ip,
                 'reasons': [{'reason':'ERR', 'count':int(count)}]
             }
+    for ip, count in mul_con.iteritems():
+        if ip in posBots:
+            posBots[ip]['reasons'].append({'reason':'MUL_CON', 'count':int(count)})
+        else:
+            posBots[ip] = {
+                'ip': ip,
+                'reasons': [{'reason':'MUL_CON', 'count':int(count)}]
+            }
     for ip in posBots:
         ip_info = getIpInfo(ip)
         if ip_info is None:
@@ -124,5 +136,5 @@ def anlyzeLog(df, db, user):
             'timestamp': str(datetime.datetime.now())
             }
         #Push to firebase
-        #db.child("test_data").push(posBots[ip], user['idToken'])
+        db.child("test_data").push(posBots[ip], user['idToken'])
     return posBots
