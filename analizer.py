@@ -114,7 +114,9 @@ def anlyzeLog(df, db):
             posBots[ip]['infoIp'] = {'organization': ip_info['org'], 
             'country':ip_info['country'],
             'city':ip_info['city'],
-            'regionName':ip_info['regionName']
+            'regionName':ip_info['regionName'],
+            'lat':ip_info['lat'],
+            'lon':ip_info['lon']
             }
         #Push to firebase
         db.child("test_data").push(posBots[ip], user['idToken'])
