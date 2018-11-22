@@ -59,7 +59,8 @@ while True:
 
     if source_ip == destination_ip:
         continue
-    db.child('log').push({'src_ip':source_ip,'dest_ip':destination_ip,'src_mac':source_mac, 'dest_mac':destination_mac,'src_port':source_Port, 'dest_port':destination_Port})
+    db.child('log').push({'src_ip':source_ip,'dest_ip':destination_ip,'src_mac':source_mac, 'dest_mac':destination_mac,'src_port':source_Port, 'dest_port':destination_Port, 'timestamp': str(datetime.datetime.now())})
+    
     record.loc[len(record)] = [source_ip,destination_ip,source_mac,destination_mac,source_Port, destination_Port]
     
 

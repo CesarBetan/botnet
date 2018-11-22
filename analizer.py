@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import json
 import pyrebase
+import datetime
 
 config = {
   "apiKey": "AIzaSyAf6e9SxUylF-Gbeb6Fu1OqbE9_Z3NnGOM",
@@ -20,7 +21,7 @@ def detectBadIp(rec):
     return rec.loc[rec['destination_IP'].isin(nuevoDF)]['destination_IP'].value_counts()
 
 def detectBadPorts(rec):
-    coincide = rec['destination_Port'].isin(["6667", "25", "1080"])
+    coincide = rec['destination_Port'].isin(["6667", "25", "1080", "21801","21802","21803", "21804", "21805", "21805"])
     nuevoDF = coincide.to_frame()
     nuevoDF['index1'] = nuevoDF.index
     nuevoDF = nuevoDF[nuevoDF['destination_Port'] == True]
@@ -111,12 +112,14 @@ def anlyzeLog(df, db):
         if ip_info is None:
             posBots[ip]['infoIp'] = "NO_INFO"
         else:
-            posBots[ip]['infoIp'] = {'organization': ip_info['org'], 
+            posBots[ip]['infoIp'] = {
+            'organization': ip_info['org'], 
             'country':ip_info['country'],
             'city':ip_info['city'],
             'regionName':ip_info['regionName'],
             'lat':ip_info['lat'],
-            'lon':ip_info['lon']
+            'lon':ip_info['lon'],
+            'timestamp': str(datetime.datetime.now())
             }
         #Push to firebase
         db.child("test_data").push(posBots[ip], user['idToken'])
